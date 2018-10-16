@@ -151,7 +151,7 @@ class Point:
             return
         # make sure that the elliptic curve equation is satisfied
         # y**2 == x**3 + a*x + b
-        if self.y**2 != self.x**3 + a*x + b:
+        if self.y**2 != self.x**3 + a*x**2 + b*x:
         # if not, throw a RuntimeError
             raise RuntimeError('({}, {}) is not on the curve'.format(self.x, self.y))
 
@@ -191,10 +191,11 @@ class Point:
         # Formula (x3,y3)==(x1,y1)+(x2,y2)
         # s=(y2-y1)/(x2-x1)
             s = (other.y - self.y) / (other.x - self.x)
+            v = (self.y * other.x - other.y * self.x) / (other.x - self.x)
         # x3=s**2-x1-x2
-            x = s**2 - self.x - other.x
+            x = s**2 - self.a - self.x - other.x
         # y3=s*(x1-x3)-y1
-            y = s*(self.x-x) - self.y
+            y = -1 * s * x - v
         # Remember to return an instance of this class:
         # self.__class__(x, y, a, b)
             return self.__class__(x, y, self.a, self.b)
@@ -203,11 +204,12 @@ class Point:
         else:
         # Formula (x3,y3)=(x1,y1)+(x1,y1)
         # s=(3*x1**2+a)/(2*y1)
-            s = (3*self.x**2 + self.a) / (2*self.y)
+            s = (3*self.x**2 + 2 * self.a * self.x + self.b) / (2*self.y)
+            v = (-1 * self.x**3 + self.b * self.x) / (2*self.y)
         # x3=s**2-2*x1
-            x = s**2 - 2*self.x
+            x = s**2 - self.a - 2*self.x
         # y3=s*(x1-x3)-y1
-            y = s*(self.x-x) - self.y
+            y = -1 * s * x - v
         # Remember to return an instance of this class:
         # self.__class__(x, y, a, b)
             return self.__class__(x, y, self.a, self.b)
@@ -384,10 +386,10 @@ class Point:
 #             self.assertEqual(s*p1, p2)
 
 
-A = 0
-B = 7
-P = 2**256 - 2**32 - 977
-N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+A = 486662
+B = 1
+P = 2**255 - 19
+N = 2**252 + 27742317777372353535851937790883648493
 
 
 class S256Field(FieldElement):
@@ -512,9 +514,8 @@ class S256Point(Point):
 
 
 G = S256Point(
-    0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798,
-    0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8)
-
+    x = 9,
+    y = 14781619447589544791020593568409986887264606134616475288964881837755586237401)
 
 # class S256Test(TestCase):
 #
